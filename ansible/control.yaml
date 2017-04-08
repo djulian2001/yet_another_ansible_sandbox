@@ -1,0 +1,7 @@
+---
+- hosts: control
+  become: true
+  gather_facts: false
+  roles:
+    - control
+  # ansible-galaxy init control   <--- creates the directory namespace the role will resolve to...

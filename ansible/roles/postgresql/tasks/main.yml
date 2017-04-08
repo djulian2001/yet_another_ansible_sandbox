@@ -1,0 +1,129 @@
+---
+# tasks file for postgresql
+# - hostname:
+#     name: "{{ item }}"
+#   with_items: "{{ inventory_hostname }}"
+
+# OK... shared files are within the role
+# - include: shared/files/epel_repo.yaml
+- include: shared/tasks/epel_repo.yaml
+  tags: ['packages']
+# - include: mysql_repo.yaml
+- name: "install database postgresql-server"
+  yum: 
+    name={{ item }}
+    state=present 
+    # update_cache=yes
+  with_items:
+    - postgresql-server
+    - postgresql-contrib
+    - postgresql-libs
+    - postgresql-devel
+    - python-psycopg2
+    # - postgresql_db
+  tags: ["packages"]
+  
+# following tasks have to be done as the postgres user with sudo..
+- name: init the database
+  become: true
+  become_user: postgres
+  command: service postgresql initdb
+           creates=/var/lib/pgsql/data/postgresql.conf
+  tags: ["app","configure"]
+  
+# add the remote hosts to the etc hosts file
+- name: "add the application hosts to the etc hosts conf"
+  become: true
+  become_user: postgres
+  lineinfile:
+    backup: yes
+    dest: /etc/hosts
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+    insertafter: EOF
+  with_items:
+    - {  regexp: '^192\.168\.34\.53\s.*app01\s.*remote\.app01\.node$',
+         line: '192.168.34.53    app01    remote.app01.node' }
+    - { regexp: '^192\.168\.34\.54\s.*app02\s.*remote\.app02\.node$',
+        line: '192.168.34.54    app02    remote.app02.node' }
+  tags: ["app","configure"]
+  
+# this is ... one way... below... above is a looping pattern .. 
+# adding a looping variable injection pattern is next.
+# - name: "add app01 host to hosts file"
+#   lineinfile:
+#     dest=/etc/hosts
+#     regexp="^192\.168\.34\.53\s.*app01\s.*remote\.app01\.node$"
+#     line="192.168.34.53    app01    remote.app01.node"
+#     state=present
+#     insertafter=EOF
+
+# - name: "add app02 host to hosts file"
+#   lineinfile:
+#     dest=/etc/hosts
+#     regexp="^192\.168\.34\.54\s.*app02\s.*remote\.app02\.node$"
+#     line="192.168.34.54    app02    remote.app02.node"
+#     state=present
+#     insertafter=EOF
+
+# TO DO:  must get the database to allow connections from
+- name: "open the postgresql database up for connections"
+  become: true
+  become_user: postgres
+  replace:
+    backup=yes
+    dest=/var/lib/pgsql/data/postgresql.conf
+    regexp="^listen_addresses\s=\s'\*'"
+    replace="listen_addresses = '{{ ansible_eth1.ipv4.address }}'"
+    # regexp="^#listen_addresses\s=\s'localhost'"
+    # replace="listen_addresses = '*'"
+  notify: restart postgresql
+  tags: ["app","configure"]
+  
+# might be better as a template?
+# add following for each app host
+#app0x    all     all        x_host_ip/32            md5   
+- name: "add the app01 servers to the pg_hba file"
+  become: true
+  become_user: postgres
+  lineinfile:
+    backup: yes
+    dest: /var/lib/pgsql/data/pg_hba.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+    insertafter: EOF
+  with_items:
+    - { regexp: '^host\s.*all\s.*all\s.*192\.168\.34\.53/32\s.*md5$',
+        line: 'host          all     all     192.168.34.53/32     md5' }
+    - { regexp: '^host\s.*all\s.*all\s.*192\.168\.34\.54/32\s.*md5$',
+        line: 'host          all     all     192.168.34.54/32     md5' }
+    - { regexp: '^host\s.*all\s.*all\s.*192\.168\.34\.50/32\s.*md5$',
+        line: 'host          all     all     192.168.34.50/32     md5' }
+  notify: restart postgresql
+  tags: ["app","configure"]
+  
+- name: "add the database to the postgresql"
+  become: true
+  become_user: postgres
+  postgresql_db:
+    name={{ database_name | default( default_database_name ) }}
+    state=present
+  tags: ["app","configure"]
+  
+- name: "add the user demo"
+  become: true
+  become_user: postgres
+  postgresql_user:
+    db={{ database_name | default( default_database_name ) }}
+    name={{ db_user_name | default( default_db_user_name ) }}
+    password={{ db_user_pass | default( default_db_user_pass ) }}
+    priv={{ db_user_priv | default( default_db_user_priv ) }}
+    state=present
+  tags: ["app","configure"]
+  
+- name: ensure that postgresql restarted
+  service: name=postgresql state=started enabled=yes
+  tags: ["service"]
+  

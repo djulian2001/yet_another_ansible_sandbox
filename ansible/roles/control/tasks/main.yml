@@ -1,0 +1,50 @@
+---
+# tasks file for control
+- hostname:
+    name: "{{ item }}"
+  with_items: "{{ inventory_hostname }}"
+
+- name: install tools
+  apt: 
+    name={{ item }}
+    state=present
+    update_cache=yes
+  with_items:
+    - curl
+  tags: [ 'packages' ]
+
+- name: "add app01 host to hosts file"
+  lineinfile:
+    dest=/etc/hosts
+    regexp="^192\.168\.34\.53\s.*app01\s.*remote\.app01\.node$"
+    line="192.168.34.53    app01    remote.app01.node"
+    state=present
+    insertafter=EOF
+  tags: ["setup_os","configure"]
+
+- name: "add app02 host to hosts file"
+  lineinfile:
+    dest=/etc/hosts
+    regexp="^192\.168\.34\.54\s.*app02\s.*remote\.app02\.node$"
+    line="192.168.34.54    app02    remote.app02.node"
+    state=present
+    insertafter=EOF
+  tags: ["setup_os","configure"]
+
+- name: "add lb host to hosts file"
+  lineinfile:
+    dest=/etc/hosts
+    regexp="^192\.168\.34\.51\s.*lb01\s.*remote\.lb01\.node$"
+    line="192.168.34.51    lb01     remote.lb01.node"
+    state=present
+    insertafter=EOF
+  tags: ["setup_os","configure"]
+
+- name: "add database host to hosts file"
+  lineinfile:
+    dest=/etc/hosts
+    regexp="^192\.168\.34\.52\s.*db01\s.*remote\.db01\.node$"
+    line="192.168.34.52    db01     remote.db01.node"
+    state=present
+    insertafter=EOF
+  tags: ["setup_os","configure"]

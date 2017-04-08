@@ -1,0 +1,111 @@
+---
+# tasks file for demo_app
+
+- include: shared/tasks/epel_repo.yaml
+  tags: ['packages']
+
+- name: install web components
+  yum: 
+    name={{ item }}
+    state=present
+    # update_cache=yes
+  with_items:
+    - python-pip
+    - python-virtualenv
+    - postgresql-libs
+    - postgresql-devel
+    - libselinux-python
+    - policycoreutils-python
+  tags: ['packages']
+
+- name: copy demo app source
+  copy: src=demo/app/ dest=/var/www/demo mode=0755
+  notify: restart httpd
+  tags: ["app","configure"]
+  
+- name: copy template wsgi file
+  template: src=demo.wsgi.j2 dest=/var/www/demo/demo.wsgi mode=0755
+  notify: restart httpd
+  tags: ["app","configure"]
+  
+- name: create directory sites-enabled
+  file: 
+    dest=/etc/httpd/sites-enabled 
+    state=directory
+  tags: ["os","configure"]
+  
+- name: create directory sites-available
+  file: 
+    dest=/etc/httpd/sites-available
+    state=directory
+  tags: ["os","configure"]
+  
+- name: copy the httpd virtual host config
+  copy: 
+    src=demo/demo.conf 
+    dest=/etc/httpd/sites-available/demo.conf 
+    mode=0775
+  notify: restart httpd
+  tags: ["app","configure"]
+  
+
+- name: python virtual enviornment
+  pip: 
+    requirements=/var/www/demo/requirements.txt 
+    virtualenv=/var/www/demo/.venv
+  notify: restart httpd
+    # state=latest
+  tags: ["app","configure"]
+  changed_when: false
+  
+- name: de-activate the default httpd site
+  # modify files already on remote host(s)
+  replace:
+    backup=yes
+    dest=/etc/httpd/conf.d/welcome.conf 
+    regexp="^(?!OK|#)"
+    replace="#"
+  notify: restart httpd
+  tags: ["os","configure"]
+  
+- name: make centos httpd act like debian apache2
+  lineinfile:
+    dest=/etc/httpd/conf/httpd.conf
+    regexp="^IncludeOptional\sconf\.d/\*\.conf"
+    line="IncludeOptional sites-enabled/*.conf"
+    backrefs=yes
+    state=present
+  notify: restart httpd
+  tags: ["os","configure"]
+  
+- name: activate our site demo
+  file: 
+    src=/etc/httpd/sites-available/demo.conf
+    dest=/etc/httpd/sites-enabled/demo.conf 
+    state=link
+  notify: restart httpd
+  tags: ["app","configure"]
+  
+- name: "add database host to hosts file"
+  lineinfile:
+    dest=/etc/hosts
+    regexp="^192\.168\.34\.52\s.*db01\s.*remote\.db01\.node$"
+    line="192.168.34.52    db01     remote.db01.node"
+    state=present
+    insertafter=EOF
+  tags: ["os","configure"]
+  
+# SELINUX issue:
+# http://serverfault.com/questions/659174/virtualenv-failed-to-map-segment-from-shared-object-permission-denied
+# set selinux to permissive.
+# /etc/selinux/config 
+# - name: "enable selinx semanage fcontext"
+#   sefcontext:
+#     target: "/var/www/demo/.venv/lib/python2.7/site-packages/psycopg2/_psycopg.so"
+#     setype: httpd_sys_script_exec_t
+#     state: present
+
+# - name: "fix the selinux context on the psycopg2 socket"
+#   shell: restorecon -v /var/www/demo/.venv/lib/python2.7/site-packages/psycopg2/_psycopg.so
+# restorecon -v /var/www/demo/.venv/lib/python2.7/site-packages/psycopg2/_psycopg.so
+

@@ -1,0 +1,130 @@
+---
+- hosts: control
+  become: true
+  tasks:
+
+    # to check on the stat of a file with verification tools
+    # - stat:
+    #   options at http://docs.ansible.com/ansible/stat_module.html
+
+    # - name: kill the odd characters
+    #   lineinfile:
+    #     dest=/home/vagrant/test.conf
+    #     regexp="^(\\->)"
+    #     state=absent
+
+    - name: testing hosts file
+      file:
+        dest=/home/ansible/hosts
+        state=touch
+
+# app01 ansible_host=192.168.34.53
+# app02 ansible_host=192.168.34.54
+
+    - name: "add app01 host to hosts file"
+      lineinfile:
+        dest=/home/ansible/hosts
+        regexp="^192\.168\.34\.53\s.*app01\s.*remote\.app01\.node$"
+        line="192.168.34.53    app01    remote.app01.node"
+        state=present
+        insertafter=EOF
+
+    - name: "add app02 host to hosts file"
+      lineinfile:
+        dest=/home/ansible/hosts
+        regexp="^192\.168\.34\.54\s.*app02\s.*remote\.app02\.node$"
+        line="192.168.34.54    app02    remote.app02.node"
+        state=present
+        insertafter=EOF
+
+
+
+    # - include: etc_hosts.yaml
+
+    - name: testing configuration file manipulations
+      lineinfile:
+        dest=/home/vagrant/test.conf
+        state=present
+        regexp="^"
+        line=""
+        create=true
+      # notify: init config
+
+    # - name: add Hello World to be removed...
+    #   lineinfile:
+    #     dest=/home/vagrant/test.conf
+    #     state=present
+    #     regexp="^"
+    #     line="Hello, World"
+
+    # - name: add a string to the test.conf file
+    #   lineinfile:
+    #     dest=/home/vagrant/test.conf
+    #     state=present
+    #     regexp="^"
+    #     line="Hello, World"
+
+    - name: add many lines to the file and delete init config values
+      lineinfile:
+        dest=/home/vagrant/test.conf
+        regexp="^"
+        line="#\n# EnableMMAP and EnableSendfile On systems that support it,\n# memory-mapping or the sendfile syscall may be used to deliver\n# files.  This usually improves server performance, but must\n# be turned off when serving from networked-mounted\n# filesystems or if support for these functions is otherwise\n# broken on your system.\n# Defaults if commented EnableMMAP On, EnableSendfile Off\n#\n#EnableMMAP off\nEnableSendfile on\n\n# Supplemental configuration\n#\n# Load config files in the /etc/httpd/conf.d directory, if any.\nIncludeOptional conf.d/*.conf"
+        state=present
+        # line="# first comment\n# 2 comment\n# 3 comment\n# 4 comment\n# 5 comment\n# last comment"
+
+    - name: add a single line, in this case the same as the comment but uncommented
+      lineinfile:
+        dest=/home/vagrant/test.conf
+        regexp="^IncludeOptional\sconf\.d/\*\.conf"
+        line="IncludeOptional sites-enabled/*.conf"
+        backrefs=yes
+        state=present
+    
+    # - name: remove the 2 comment line
+    #   lineinfile:
+    #     dest=/home/vagrant/test.conf
+    #     regexp="^# 2 comment"
+    #     state=absent
+    
+    # - name: replace bangs with other character
+    #   replace:
+    #     dest=/home/vagrant/test.conf
+    #     regexp="^\^#"
+    #     replace="#"
+
+    # - name: replace bangs with other character
+    #   replace:
+    #     dest=/home/vagrant/test.conf
+    #     regexp="^|^#\s{0,3}"
+    #     replace="# "
+
+    # - name: replace bangs with other character
+    #   replace:
+    #     dest=/home/vagrant/test.conf
+    #     regexp="^(?!OK|#)"
+    #     replace="#"
+
+    # "^(?!OK|\\.).*"
+
+    # - name: existing comments leave as such
+    #   replace:
+    #     dest=/home/vagrant/test.conf
+    #     regexp="^#\s#"
+    #     replace="# "
+
+
+
+    # - name: lets clear this file
+    #   file:
+    #     dest=/home/vagrant/test.conf
+    #     backup=yes
+    #     state=absent
+
+  # handlers:
+  #   # this will run everytime. and after the above changes.
+  #   - name: init config
+  #     lineinfile:
+  #       dest=/home/vagrant/test.conf
+  #       state=present
+  #       regexp="^"
+  #       line="Hello, World"

@@ -1,0 +1,6 @@
+---
+# defaults file for postgresql
+default_database_name: myapp
+default_db_user_name: dbuser
+default_db_user_pass: dbpass    # Can we use a secret here instead of in repo defualt, etc.
+default_db_user_priv: ALL       # In production, this might be too open.

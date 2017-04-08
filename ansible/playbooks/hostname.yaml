@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks:
+    - name: "get server hostname"
+      command: hostname
+
+
+
+
+
+# plays are ways of executing many commands in sequence? or ordered

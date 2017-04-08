@@ -1,0 +1,5 @@
+---
+# handlers file for apache2
+- name: restart httpd
+  service: name=httpd state=restarted
+  changed_when: false

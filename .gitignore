@@ -1,0 +1,9 @@
+.vagrant/**
+logs/**
+docs/**
+.DS_Store
+.project
+*.pyc
+*.egg-info
+alembic.ini
+ansible/.vault_pass.txt

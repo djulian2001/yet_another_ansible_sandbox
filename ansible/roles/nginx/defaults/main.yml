@@ -1,0 +1,9 @@
+---
+# defaults file for nginx
+sites:
+  myapp:
+    frontend: 80
+    backend: 80
+  # demo:
+  #   frontend: 8080
+  #   backend: 8080

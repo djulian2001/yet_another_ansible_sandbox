@@ -1,0 +1,137 @@
+---
+# tasks file for nginx
+- hostname:
+    name: "{{ item }}"
+  with_items: "{{ inventory_hostname }}"
+  tags: ["os","configure"]
+
+# add the repos so we can do these things..
+
+- include: shared/tasks/epel_repo.yaml
+  tags: ['packages']
+
+- name: "install nginx"
+  yum: 
+    name=nginx 
+    state=present
+    # update_cache=yes
+  tags: ['packages']
+
+    # states: 
+    #         started    <-
+    #         restarted
+    #         stoped
+    #         reload
+    # enabled:        
+# the ubuntu way... we are centos with ubuntu conventions better? worse? it's a tut. 
+# - name: de-activate the default sites
+#   file:
+#     dest=/etc/nginx/sites-enabled/default
+#     state=absent
+#   notify: restart nginx
+
+- name: "add an html page for server setup correctly"
+  lineinfile:
+    dest=/etc/nginx/setup_correctly.html
+    regexp="^server\ssetup\scorrectly$"
+    line="server setup correctly"
+    state=present
+    create=yes
+  tags: ["os","configure"]
+  
+
+- name: "add app01 host to hosts file"
+  lineinfile:
+    dest=/etc/hosts
+    regexp="^192\.168\.34\.53\s.*app01\s.*remote\.app01\.node$"
+    line="192.168.34.53    app01    remote.app01.node"
+    state=present
+    insertafter=EOF
+  tags: ["os","configure"]
+
+- name: "add app02 host to hosts file"
+  lineinfile:
+    dest=/etc/hosts
+    regexp="^192\.168\.34\.54\s.*app02\s.*remote\.app02\.node$"
+    line="192.168.34.54    app02    remote.app02.node"
+    state=present
+    insertafter=EOF
+  tags: ["os","configure"]
+
+- name: create directory sites-enabled
+  file: 
+    dest=/etc/nginx/sites-enabled 
+    state=directory
+  tags: ["os","configure"]
+
+- name: create directory sites-available
+  file: 
+    dest=/etc/nginx/sites-available
+    state=directory
+  tags: ["os","configure"]
+
+- name: de-activate the default sites conf
+  file:
+    dest=/etc/nginx/nginx.conf.default
+    backup=yes
+    state=absent
+  tags: ["os","configure"]
+
+- name: get list of activated sites
+  shell: ls -1 /etc/nginx/sites-enabled
+  register: active
+  changed_when: "active.stdout_lines != sites.keys()"
+  tags: ["os","configure"]
+
+- debug: var=active.stdout_lines
+- debug: var=db_name
+- debug: var=vars
+
+- name: de-activate active sites
+  file:
+    dest=/etc/nginx/sites-enabled/{{ item }}
+    state=absent
+  with_items: active.stdout_lines
+  when: item not in sites
+  notify: restart nginx
+  tags: ["os","configure"]
+
+- name: configure site
+  template:
+    src=nginx.conf.j2
+    dest=/etc/nginx/sites-available/{{ item.key }}
+    mode=0644
+  with_dict: "{{ sites }}"
+  notify: restart nginx
+  tags: ["app","configure"]
+
+- name: activate nginx sites
+  file:
+    src=/etc/nginx/sites-available/{{ item.key }}
+    dest=/etc/nginx/sites-enabled/{{ item.key }}
+    state=link
+  with_dict: "{{ sites }}"
+  notify: restart nginx
+  tags: ["app","configure"]
+
+# - name: change the nginx conf file
+#   lineinfile:
+#     dest=/etc/nginx/nginx.conf
+#     regexp="^\s.*include\s/etc/nginx/default\.d/\*\.conf;$"
+#     line="        include /etc/nginx/sites-available/demo;"
+#     backrefs=yes
+#     state=present
+#   notify: restart nginx
+- name: "replace the nginx conf file with template"
+  template:
+    dest=/etc/nginx/nginx.conf
+    src=etc_nginx.conf.j2
+    backup=yes
+    mode=0655
+  with_dict: "{{ sites }}"
+  notify: restart nginx
+  tags: ["app","configure"]
+
+- name: ensure nginx started
+  service: name=nginx state=started enabled=yes
+  tags: ["service"]

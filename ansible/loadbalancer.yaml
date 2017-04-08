@@ -1,0 +1,11 @@
+---
+- hosts: loadbalancer
+  become: true        # escalate the privileges 
+  gather_facts: false
+  roles:
+    - nginx  
+
+# #################################################################
+# # nginx - need to enable the upstream directive...
+# # 2017/03/25 01:29:41 [emerg] 6466#0: "upstream" directive is not allowed here in /etc/nginx/sites-available/demo:1
+# #################################################################

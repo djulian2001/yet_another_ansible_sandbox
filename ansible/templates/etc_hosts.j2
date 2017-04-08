@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+# NOTE: there will have to be OS based templates... expand on later..
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+{% for item in play_hosts %}
+{% set short_name = item.split('.') %}
+{{ hostvars[item]['ansible_host'] }}  {{ item }} {{ short_name[0] }}
+{% endfor %}
+
+
+########################################
+# put this task below to drive this...
+# some known issues: 
+#	1) HAVE to have ansible_host assisgned in inventory file to work
+#	2) there are other ways to do this, this one just worked, others:
+#		used the dict object from cmd:
+#		ansible -m setup <host>
+########################################
+    # task that sets etc host based on template - etc_hosts.j2
+    - name: "Generate the etc hosts file"
+      template:
+        src=../templates/etc_hosts.j2
+        dest=/etc/hosts

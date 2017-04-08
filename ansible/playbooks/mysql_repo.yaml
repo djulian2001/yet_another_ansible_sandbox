@@ -1,0 +1,33 @@
+---
+##########
+# Ansible module yum_repository, clearly redhat releases.
+# 
+#
+#
+#
+#
+##########
+
+- name: "Add the official mysql rpm repo"
+  yum_repository:
+    name: "mysql-server"
+      # Unique repository ID.
+      # This parameter is only required if state is set to present or absent.
+    description: "Add the repo to yum"
+      # human readable, required if "state: present"
+    baseurl: http://repo.mysql.com/yum/mysql-5.7-community/el/$releasever/$basearch
+      # can be this or mirrorlist
+      # wget http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm
+    # mirrorlist:
+      # Specifies a URL to a file containing a list of baseurls.
+    state: present
+    enabled: yes
+      # This tells yum whether or not use this repository.
+    gpgkey: http://dev.mysql.com/doc/refman/5.7/en/checking-gpg-signature.html
+      # [vagrant@remote ~]$ sudo cat /etc/pki/rpm-gpg/RPM-GPG-KEY-
+      # A URL pointing to the ASCII-armored GPG key file for the repository.
+    gpgcheck: yes
+      # Tells yum whether or not it should perform a GPG signature check on packages.
+    # params: "{{ args_as_params }}"
+      # Option used to allow the user to overwrite any of the other options. 
+      # To remove an option, set the value of the option to null.

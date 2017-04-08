@@ -1,0 +1,19 @@
+[loadbalancer]
+lb01 ansible_host=192.168.34.51
+
+[webserver]
+app01 ansible_host=192.168.34.53
+app02 ansible_host=192.168.34.54
+
+[database]
+db01 ansible_host=192.168.34.52
+
+[control]
+control ansible_connection=local ansible_host=192.168.34.50
+
+# NOTE: just using the label that he had did not work...
+# 192.168.34.50
+# 192.168.34.51
+# 192.168.34.52
+# 192.168.34.53
+# 192.168.34.54

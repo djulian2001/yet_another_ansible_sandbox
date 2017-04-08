@@ -1,0 +1,24 @@
+---
+# tasks file for apache2 aka httpd
+- hostname:
+    name: "{{ item }}"
+  with_items: "{{ inventory_hostname }}"
+  
+- include: shared/tasks/epel_repo.yaml
+  tags: ['packages']
+- name: install web components
+  yum: 
+    name={{ item }} 
+    state=present 
+    # update_cache=yes
+  with_items:
+    - mod_wsgi
+    - httpd
+  tags: ['packages']
+
+- name: ensure mod_wsgi enabled
+  apache2_module: state=present name=wsgi
+  notify: restart httpd
+
+- name: ensure web components started
+  service: name=httpd state=started enabled=yes

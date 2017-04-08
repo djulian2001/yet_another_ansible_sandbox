@@ -1,0 +1,38 @@
+---
+
+####
+# Install the epel repository explain it:
+# The below is how to hand build the "epel repo"
+# In our vagrant cenos/7 box, it's not enabled by default
+# BUT all of the files and some are already there. SO just
+# running the ini_file...
+# NOTES: most rpm's will have a configuration aspect where
+#   they will self publish to the yum package manager. 
+###
+# - name: update settings for yum cache
+#   yum_repository:
+#         keepcache=1 
+#         http_caching=all
+#         metadata_expire=86400
+
+# Copy the repo config file to /etc/yum.repos.d directory
+# changes the permissions on the file
+- name: "bootstrap-epel-release-repo"
+  copy: src=bootstraps/bootstrap_epel.repo
+        dest=/etc/yum.repos.d/
+        owner=root group=root mode=0644
+
+# downloads package epel-release
+# enables the repo using settings in the copy
+- name: "epel-release install"
+  yum: name=epel-release
+       enablerepo=bootstrap_epel
+       state=present
+       update_cache=yes
+
+# The ISO box is already a part of the distribution... enable it.
+- name: "epel repository enable"
+  ini_file: dest=/etc/yum.repos.d/epel.repo
+            section=epel
+            option=enable
+            value=1
