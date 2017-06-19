@@ -2,8 +2,12 @@
 UAPPNAME="$1"
 SSHPASS="$2"
 
-apt-get update
-apt-get install -y git sshpass
+# enable epel
+sudo yum --enablerepo=epel -y install epel-release
+
+yum update -y
+
+yum install -y git sshpass
 	
 # set up the ansible manager...
 /bin/bash /vagrant/add_ansible_user.sh "$1" "$2" $3 "$4"
@@ -53,11 +57,11 @@ done
 # 	# /bin/echo "status: $?"
 # done < "$IP_FILE"
 
-apt-get install -y software-properties-common
-apt-get update -y
-apt-add-repository -y ppa:ansible/ansible
-apt-get install ansible -y
-apt-get autoremove -y
+# apt-get install -y software-properties-common
+# apt-get update -y
+# apt-add-repository -y ppa:ansible/ansible
+# apt-get install ansible -y
+# apt-get autoremove -y
 
 # there probably needs to be a host publishing step for all remote hosts within the manager node...
 # NOTE:  apparently if you don't get the server finger print and examine it to ensure 
