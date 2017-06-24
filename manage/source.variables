@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# source this file to set env
+export HISTCONTROL="$HISTCONTROL:ignorespace"

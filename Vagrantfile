@@ -20,7 +20,7 @@ vm_configs = configs['configs'][configs['configs']['use']]
 
 Vagrant.configure(2) do |config|
 
-  (1..2).each do |var|
+  (1..1).each do |var|
     config.vm.define vm_configs['node']['vagrant_name'] % { :hook => var } do |rem_lb|
       rem_lb.vm.box = vm_configs['node']['vagrant_box']
       rem_lb.vm.hostname = vm_configs['node']['hostname'] % { :hook => var }

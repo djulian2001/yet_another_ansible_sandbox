@@ -19,7 +19,7 @@ if [ ! "$(grep ^$UAPPNAME /etc/sudoers | grep -v grep)" ] ; then
     echo -e "$UAPPNAME\t\tALL=(ALL) NOPASSWD:ALL\t# $DESCRIPTION" >> /etc/sudoers
 fi
 
-# create the RSA key for the user...
+# create the RSA key for the user... manager node only?
 
 if [ ! -f "/home/$UAPPNAME/.ssh/id_rsa.pub" ]; then
 	if [ ! -d "/home/$UAPPNAME/.ssh" ]; then

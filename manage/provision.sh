@@ -2,13 +2,16 @@
 UAPPNAME="$1"
 SSHPASS="$2"
 
+. "/vagrant/manage/source.variables"
+
 # enable epel
+
+sudo yum -y install epel-release
 sudo yum --enablerepo=epel -y install epel-release
 
 yum update -y
-
 yum install -y git sshpass
-	
+
 # set up the ansible manager...
 /bin/bash /vagrant/add_ansible_user.sh "$1" "$2" $3 "$4"
 
@@ -31,6 +34,7 @@ usermod -a -G vagrant ansible
 
 
 # not safe lets us an env variable
+
 export SSHPASS="$SSHPASS" && \
 IP_FILE="/vagrant/manage/hosts"
 
@@ -46,16 +50,20 @@ for REMOTE_IP in $(cat < "$IP_FILE"); do
 	# /bin/echo "status: $?"
 done
 
-# VERY ODD Vagrant issue:
-# this reads first loop only
-# cant do this in the provision.sh script, but it works as a local shell script.
-# while IFS=$'\n' read -r REMOTE_IP || [[ -n "$REMOTE_IP" ]]; do
-# 	/bin/echo "rsa key copy for $REMOTE_IP"
-# 	cat "/home/$UAPPNAME/.ssh/id_rsa.pub" | sshpass -e ssh -y -o StrictHostKeyChecking=no "$UAPPNAME@$REMOTE_IP" "cat >> ~/.ssh/authorized_keys" 
-# 	# /bin/echo "status: $?"
-# 	sshpass -e ssh -y "$UAPPNAME@$REMOTE_IP" "chmod 600 ~/.ssh/authorized_keys" 
-# 	# /bin/echo "status: $?"
-# done < "$IP_FILE"
+# setup and install ansible with pip..
+echo "INSTALL ansible using pip..."
+sudo yum -y install python-pip python-devel openssl-devel.x86_64
+sudo pip install --upgrade pip
+sudo pip install ansible
+sudo pip install --upgrade ansible
+echo "INSTALL redis using yum and pip..."
+sudo yum -y install redis
+sudo service redis start
+sudo pip install redis
+sudo pip install --upgrade redis
+
+echo "INSTALL wget using yum..."
+sudo yum install -y wget.x86_64
 
 # apt-get install -y software-properties-common
 # apt-get update -y

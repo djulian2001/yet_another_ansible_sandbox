@@ -19,38 +19,6 @@ configs:
       vbox_name: 'rc_ansible_centos7_node_%{hook}'
       provision_label: 'compute node_%{hook}'
       provision_path: './remote/provision.sh'
-    # remote_lb:
-    #   vagrant_name: 'remote_lb_node'
-    #   vagrant_box: 'centos/7'
-    #   hostname: 'remote.lb.node'
-    #   private_ip: '192.168.34.51'
-    #   vbox_name: 'rc_ansible_remote_lb_centos_7'
-    #   provision_label: 'remote_lb node'
-    #   provision_path: './remote/provision.sh'
-    # remote_db:
-    #   vagrant_name: 'remote_db_node'
-    #   vagrant_box: 'centos/7'
-    #   hostname: 'remote.db.node'
-    #   private_ip: '192.168.34.52'
-    #   vbox_name: 'rc_ansible_remote_db_centos_7'
-    #   provision_label: 'remote_db node'
-    #   provision_path: './remote/provision.sh'
-    # remote_app1:
-    #   vagrant_name: 'remote_app1_node'
-    #   vagrant_box: 'centos/7'
-    #   hostname: 'remote.app1.node'
-    #   private_ip: '192.168.34.53'
-    #   vbox_name: 'rc_ansible_remote_app1_centos_7'
-    #   provision_label: 'remote_app1 node'
-    #   provision_path: './remote/provision.sh'
-    # remote_app2:
-    #   vagrant_name: 'remote_app2_node'
-    #   vagrant_box: 'centos/7'
-    #   hostname: 'remote.app2.node'
-    #   private_ip: '192.168.34.54'
-    #   vbox_name: 'rc_ansible_remote_app2_centos_7'
-    #   provision_label: 'remote_app2 node'
-    #   provision_path: './remote/provision.sh'
     manage:
       vagrant_name: 'manage_node'
       vagrant_box: 'centos/7'
@@ -59,5 +27,3 @@ configs:
       vbox_name: 'rc_ansible_centos7_manage'
       provision_label: 'manager node'
       provision_path: './manage/provision.sh'
-
-    # more variables
