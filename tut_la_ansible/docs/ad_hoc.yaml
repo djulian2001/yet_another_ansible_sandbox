@@ -1,0 +1,74 @@
+--- # ansible ad-hoc
+- Why:
+  - validates that the playbook your trying make work was done
+  - can be used to test that a service is working
+  - checking what your working on setting
+
+
+- How:
+  - the ansible command can do many things
+  - ansible --help
+    - b also become the root user, is this configurable, i believe so
+    - the flag --become-user [user_name] is who to run the command as a curtain user.
+      - say as the posgres user to trigger a database backup.
+
+- Scope:
+  - whenever you need to 'look' at a remote server, when a playbook doesn't cover an issue
+
+- Example:
+  - ansible all -m ping
+  - ansible all -a "ls -l /home/ansible"
+  - ansible all -a "touch /home/ansible/from_your_manager.txt"
+  
+- Use ad-hoc to gather facts:
+  - cmd: ansible centos -b -m setup -a "filter=ansible_default_ipv4"
+  - cmd: ansible centos -b -m setup -a "filter=ansible_eth1.ipv4"
+
+- using ad-hoc with variables:
+  - in the host file add a variable like 'folder=/home/ansible'
+  - cmd: ansible worker -a "ls -la {{ folder }}"
+
+- Validation:
+  - test:
+      cmd: ansible worker -b -m yum_repository -a "
+          name=epel 
+          state=present 
+          baseurl=https://download.fedoraproject.org/pub/epel/$releasever/$basearch/ 
+          description=epel_repo"
+      varify: ansible centos -a "cat /etc/yum.repos.d/epel.repo"
+      output:
+        192.168.34.51 | SUCCESS | rc=0 >>
+        [epel]
+        baseurl = https://download.fedoraproject.org/pub/epel///
+        name = epel_repo
+
+
+        192.168.34.50 | SUCCESS | rc=0 >>
+        [epel]
+        name=Extra Packages for Enterprise Linux 7 - $basearch
+        #baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
+        mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
+        failovermethod=priority
+        enabled=1
+        gpgcheck=1
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+        [epel-debuginfo]
+        name=Extra Packages for Enterprise Linux 7 - $basearch - Debug
+        #baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch/debug
+        mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-7&arch=$basearch
+        failovermethod=priority
+        enabled=0
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+        gpgcheck=1
+
+        [epel-source]
+        name=Extra Packages for Enterprise Linux 7 - $basearch - Source
+        #baseurl=http://download.fedoraproject.org/pub/epel/7/SRPMS
+        mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-7&arch=$basearch
+        failovermethod=priority
+        enabled=0
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+        gpgcheck=1
+      summary:
+        - the worker epel.repo is bad.

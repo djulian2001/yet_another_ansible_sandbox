@@ -1,0 +1,112 @@
+--- # ansible... lets use yaml for our notes...
+
+
+- Core_components_in_ansible:
+
+  INVENTORIES:
+    - staic or local /etc/ansible/hosts ( 1 place ansible looks )
+    - can be called from different file via the -i option
+    - a dynamic can provide via a program ( json format )
+
+  MODULES:
+    - tools in the workshop
+    - there are many default modules (the module library) can be run directly or through playbooks
+      against the hosts in the provided inventory
+    
+    - yum_module_example:
+      source: docs.ansible/ansible/yum_module.html
+
+    - we can create our own modules
+
+  VARIABLES:
+  - allow you customize behavior for the variances within systems.
+  - how we deal with those difference between systems
+    variable_formating:
+      - letters
+      - numbers
+      - underscores
+      - always start with a letter
+      - can be defined within the inventory
+      - defined in playbooks or roles
+      - referenced from the jinja2 templating system
+      - can be facts from remote hosts
+      example: dest={{ remote_path }}
+
+  FACTS:
+    - facts are a way of getting data from a system about the systems
+    - facts can be used within the other core components
+    - gathering facts can be enable and disable at:
+      - a global configuration level
+      - within a playbook
+      - run time flag
+    - customize remote facts can be set on remote node
+      FILE: /etc/ansible/facts.d/preferences.fact  # The ".fact" < is the code hook JSON or INI format
+    - facts are not always required
+    - speed stuff up by not required facts
+
+  PLAYBOOKS_AND_PLAYS:
+    - instruction manuals
+    - playbook is made up of individual plays (tasks)
+    - a play is a task
+    - playbooks are in YAML format
+    - a single file run by ansible ( standalone file )
+
+  CONFIGURATION_FILES:
+    - default: /etc/ansible/ansible.cfg
+    - you can disable or enable options in the config file.  ( over 100 flags )
+    - config is read every run of a playbook
+    - order:
+      - enviornment_variable: $ANSIBLE_CONFIG
+      - current_dir: $(pwd)/ansible.cfg
+      - ansible_home_dir: ~/.ansible.cfg    # yes it's hidden?
+      - default: /etc/ansible/ansible.cfg
+
+  TEMPLATES:
+    - a module called template
+    - templates are defined and a set of parameters for running an ansible job
+    - "job templates" are useful to execute the same job many times
+    - variables are used within templates to populate the content
+    - jobs?  what does the instructuro mean here
+
+  HANDLERS:
+    - a task in a playbook triggers a handler
+    - used to handle error conditions
+    - called at the end of a play
+
+  ROLES:
+    - a playbook can reference roles
+    - roles are a framework of directores to logically structure what makes up a 'playbook'
+      example:
+        - roles_directory_base: roles/[role]/
+          directores_in_a_role:
+            - defaults
+            - handlers 
+            - meta
+            - tasks
+            - tests
+            - vars
+          dirctory_contents_base: main.yaml
+
+  ANSIBLE_VAULT:
+    - secure store, secrets
+    - sensitive_data: passwords, ssl certs, encrypted files, etc
+    - command line tool ansible-vault is used to edit files
+    - command line flags --ask-vault-pass or --vault-password-file
+
+  AD_HOC:
+    - ad-hoc commands are one off commands run on the control or manager node(s)
+    example: ansible all -m ping
+    example: 
+            $ ssh-agent bash    
+              # interesting https://superuser.com/questions/284374/ssh-keys-ssh-agent-bash-and-ssh-add
+            $ ssh-add ~/.ssh/rsa_key_on_remote_host
+              # key was the one added when bootstraping the ansible enviornment.
+            $ ansible "[host ini value]" -a "/bin/echo 'hello from ' $(hostname)" -f 10
+              # the -f (forks) runs the command parallel mode.
+    - ansible is an ssh wrapper to do admin tasks
+    - ad-hoc actions on the cli could become playbooks
+    - should if you run the command more then 1 time 
+  
+
+
+

@@ -1,6 +1,9 @@
 [control]
 control ansible_connection=local ansible_host=192.168.34.50
 
-[moby_managers]
+[managers]
+control ansible_host=192.168.34.51
 
 [workers]
+control ansible_host=192.168.34.52
+control ansible_host=192.168.34.53
