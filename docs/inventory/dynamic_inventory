@@ -1,0 +1,36 @@
+# using cobbler's api to general your inventory
+# source: http://docs.ansible.com/ansible/intro_dynamic_inventory.html
+[cobbler]
+
+host = uri_path_to_cobbler_api
+host = http://127.0.0.1/cobbler_api
+
+#  apparently cobbler can be "slow" and thus be greatly improved by caching the data
+#  when caching is used the cache_path dir variable will have 2 files within:
+#    - ansible-cobbler.cache
+#    - ansible-cobbler.index
+
+cache_path = path_to_cache_variables
+cache_path = /tmp/ansible_cobbler_cache
+
+# the cache has to be update, setting the following (in seconds) will trigger a refresch call
+# to cobblers api
+
+cache_max_age = integer
+cache_max_age = 900     # seconds
+
+# question: can dynamic inventory scripts be set to update cache on upstream changes?
+
+using the script
+Initial use is to run... assuming cobbler has stuff already there.
+
+/etc/ansible/cobbler.py
+
+There is some automated setup.  What is retruned from cobbler becomes your inventory, so
+ansible defined variables that collide with the cobbler variables are overwritten by the
+cobbler values.
+
+# ansible setup module is run at playbook time, to just run a setup without a playbook
+# the following commands will achive this:
+ansible webserver -m setup
+ansible webserver -m template -a "src=/tmp/motd.j2 dest=/etc/motd"

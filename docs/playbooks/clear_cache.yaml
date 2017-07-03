@@ -1,0 +1,9 @@
+---
+
+# cmd: ansible-playbook --flush-cache
+# run this command in sequence with the timeout option in the configuration file.
+# source: http://jpmens.net/2015/01/29/caching-facts-in-ansible/
+- hosts:
+  - all
+  gather_facts: True
+

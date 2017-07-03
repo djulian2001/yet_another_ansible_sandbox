@@ -1,6 +1,6 @@
 .vagrant/**
 logs/**
-docs/**
+#docs/**
 .DS_Store
 .project
 *.pyc
